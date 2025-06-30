@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import React, { useState, useRef, useEffect } from "react"
 import { useDrop } from "react-dnd"
 import { ItemTypes } from "./itemtypes"
 
@@ -36,9 +36,8 @@ const CourseBuilder = () => {
     setToasts((prev) => [...prev, { id, message, type }])
   }
 
-  const removeToast = (id) => {
+  const removeToast = (id) =>
     setToasts((prev) => prev.filter((toast) => toast.id !== id))
-  }
 
   const moveModule = (fromIndex, toIndex) => {
     if (fromIndex === toIndex) return
@@ -50,7 +49,9 @@ const CourseBuilder = () => {
   }
 
   const moveItem = (itemId, newModuleId) => {
-    setItems((prev) => prev.map((item) => (item.id === itemId ? { ...item, moduleId: newModuleId } : item)))
+    setItems((prev) =>
+      prev.map((item) => (item.id === itemId ? { ...item, moduleId: newModuleId } : item))
+    )
     showToast("Item moved successfully", "success")
   }
 
@@ -129,25 +130,21 @@ const CourseBuilder = () => {
 
   const handleSaveModule = (module) => {
     if (!module.title.trim()) return
-
     if (!currentModule && modules.some((m) => m.title === module.title.trim())) {
       showToast("A module with this name already exists", "error")
       return
     }
-
     if (currentModule) {
       setModules((prev) => prev.map((m) => (m.id === module.id ? module : m)))
       showToast("Module updated successfully", "success")
     } else {
-      const newModule = {
-        ...module,
-        id: Date.now().toString(),
-        isNew: true,
-      }
+      const newModule = { ...module, id: Date.now().toString(), isNew: true }
       setModules((prev) => [...prev, newModule])
       showToast("Module created successfully", "success")
       setTimeout(() => {
-        setModules((prev) => prev.map((m) => (m.id === newModule.id ? { ...m, isNew: false } : m)))
+        setModules((prev) =>
+          prev.map((m) => (m.id === newModule.id ? { ...m, isNew: false } : m))
+        )
       }, 500)
     }
     handleClose("module")
@@ -167,9 +164,7 @@ const CourseBuilder = () => {
     showToast(`Module "${moduleTitle}" deleted`, "success")
   }
 
-  const handleAddItem = (moduleId) => {
-    setCurrentModuleId(moduleId)
-  }
+  const handleAddItem = (moduleId) => setCurrentModuleId(moduleId)
 
   const handleSaveLink = (linkItem) => {
     setItems((prev) => [...prev, linkItem])
@@ -191,22 +186,24 @@ const CourseBuilder = () => {
 
   const handleEditItem = (item) => {
     setCurrentItem(item)
-    if (item.type === "link") {
-      setIsEditLinkModalOpen(true)
-    } else {
-      setIsEditFileModalOpen(true)
-    }
+    item.type === "link" ? setIsEditLinkModalOpen(true) : setIsEditFileModalOpen(true)
   }
 
   const handleUpdateItem = (updatedItem) => {
-    setItems((prev) => prev.map((item) => (item.id === updatedItem.id ? updatedItem : item)))
-    showToast(`${updatedItem.type === "link" ? "Link" : "File"} updated successfully`, "success")
+    setItems((prev) =>
+      prev.map((item) => (item.id === updatedItem.id ? updatedItem : item))
+    )
+    showToast(
+      `${updatedItem.type === "link" ? "Link" : "File"} updated successfully`,
+      "success"
+    )
     handleClose(updatedItem.type === "link" ? "editLink" : "editFile")
   }
 
   const scrollToModule = (id) => {
-    if (moduleRefs.current[id]) {
-      moduleRefs.current[id]?.scrollIntoView({ behavior: "smooth", block: "center" })
+    const node = moduleRefs.current[id]
+    if (node) {
+      node.scrollIntoView({ behavior: "smooth", block: "center" })
       setActiveModuleId(id)
     }
   }
@@ -226,34 +223,31 @@ const CourseBuilder = () => {
   const getVisibleModules = () => {
     if (!searchTerm) return modules
     const lower = searchTerm.toLowerCase()
-    const moduleMap = new Map()
-
+    const map = new Map()
     modules.forEach((m) => {
-      if (m.title.toLowerCase().includes(lower)) moduleMap.set(m.id, m)
+      if (m.title.toLowerCase().includes(lower)) map.set(m.id, m)
     })
-
     items
       .filter((i) =>
-        ["title", "url", "fileName"].some((key) => i[key]?.toString().toLowerCase().includes(lower)),
+        ["title", "url", "fileName"].some((k) =>
+          i[k]?.toString().toLowerCase().includes(lower)
+        )
       )
       .forEach((i) => {
         const m = modules.find((mod) => mod.id === i.moduleId)
-        if (m) moduleMap.set(m.id, m)
+        if (m) map.set(m.id, m)
       })
-
-    return Array.from(moduleMap.values())
+    return Array.from(map.values())
   }
 
   const getFilteredItems = (moduleId) => {
-    if (!searchTerm) {
-      return moduleId ? items.filter((i) => i.moduleId === moduleId) : items.filter((i) => !i.moduleId)
-    }
-
+    if (!searchTerm) return moduleId ? items.filter((i) => i.moduleId === moduleId) : items.filter((i) => !i.moduleId)
     const lower = searchTerm.toLowerCase()
     const filtered = items.filter((i) =>
-      ["title", "url", "fileName"].some((key) => i[key]?.toString().toLowerCase().includes(lower)),
+      ["title", "url", "fileName"].some((k) =>
+        i[k]?.toString().toLowerCase().includes(lower)
+      )
     )
-
     return moduleId ? filtered.filter((i) => i.moduleId === moduleId) : filtered.filter((i) => !i.moduleId)
   }
 
@@ -261,25 +255,38 @@ const CourseBuilder = () => {
   const standaloneItems = getFilteredItems()
 
   return (
-    <div className="course-builder" ref={drop}>
+    <div className="course-builder bg-gray-900 min-h-screen text-gray-100 p-6" ref={drop}>
+      {/* Header with enhanced text visibility */}
       <Header
         onAddClick={handleAddClick}
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         moduleCount={modules.length}
         itemCount={items.length}
+        className="text-gray-100 bg-gray-800 shadow-lg rounded-lg p-4 mb-6"
+        placeholder="Search modules, links, or files..."
       />
 
-      <div className="content-with-fixed-header">
-        <div className="flex flex-1 gap-6 relative">
-          <Outline modules={modules} scrollToModule={scrollToModule} activeIndex={activeModuleId} />
+      <div className="content-with-fixed-header max-w-7xl mx-auto">
+        <div className="flex gap-8 relative">
+          {/* Outline with clearer text styling */}
+          <Outline
+            modules={modules}
+            scrollToModule={scrollToModule}
+            activeIndex={activeModuleId}
+            className="text-gray-100 bg-gray-800 rounded-lg p-4 w-64 sticky top-4"
+          />
 
-          <div className="flex-1 ml-80">
+          <div className="flex-1 ml-72">
             <div className="scrollable-content">
               {modules.length === 0 && !searchTerm ? (
-                <EmptyState onAddClick={handleAddClick} />
+                <EmptyState
+                  onAddClick={handleAddClick}
+                  className="text-gray-100 bg-gray-800 rounded-lg p-6 text-center"
+                  message="No modules yet. Start by adding a module, link, or file!"
+                />
               ) : (
-                <div className="space-y-6 pb-8">
+                <div className="space-y-8 pb-12">
                   {(searchTerm ? visibleModules : modules).map((module) => (
                     <div
                       key={module.id}
@@ -291,7 +298,9 @@ const CourseBuilder = () => {
                         module={module}
                         index={modules.findIndex((m) => m.id === module.id)}
                         items={getFilteredItems(module.id)}
-                        className={module.isNew ? "animate-fade-scale" : ""}
+                        className={`${
+                          module.isNew ? "animate-fade-scale" : ""
+                        } bg-gray-800 rounded-lg p-6 shadow-md text-gray-100`}
                         onEdit={handleEditModule}
                         onDelete={handleDeleteModule}
                         onAddItem={handleAddItem}
@@ -305,10 +314,10 @@ const CourseBuilder = () => {
                   ))}
 
                   {searchTerm && standaloneItems.length > 0 && (
-                    <div className="card p-6 animate-slide-up">
-                      <h3 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gray-100 rounded-xl flex items-center justify-center">
-                          <span className="text-lg">🔍</span>
+                    <div className="card p-6 bg-gray-800 rounded-lg shadow-md animate-slide-up">
+                      <h3 className="text-2xl font-semibold mb-6 flex items-center gap-4 text-gray-100">
+                        <div className="w-12 h-12 bg-gray-700 rounded-xl flex items-center justify-center">
+                          <span className="text-xl">🔍</span>
                         </div>
                         Standalone Resources
                       </h3>
@@ -316,18 +325,20 @@ const CourseBuilder = () => {
                         {standaloneItems.map((item) => (
                           <div
                             key={item.id}
-                            className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors duration-200"
+                            className="flex items-center justify-between p-4 bg-gray-700 rounded-xl hover:bg-gray-600 transition-colors duration-200"
                           >
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center shadow-sm">
-                                <span className="text-lg">{item.type === "link" ? "🔗" : "📄"}</span>
+                              <div className="w-12 h-12 bg-gray-600 rounded-lg flex items-center justify-center shadow-sm">
+                                <span className="text-gray-100 text-xl">
+                                  {item.type === "link" ? "🔗" : "📄"}
+                                </span>
                               </div>
                               <div>
-                                <h4 className="font-semibold text-gray-900">{item.title}</h4>
+                                <h4 className="font-semibold text-lg text-gray-100">{item.title}</h4>
                                 {item.type === "link" && item.url && (
                                   <a
                                     href={item.url}
-                                    className="text-sm text-blue-600 hover:underline"
+                                    className="underline text-blue-400 hover:text-blue-300 transition-colors"
                                     target="_blank"
                                     rel="noopener noreferrer"
                                   >
@@ -335,26 +346,26 @@ const CourseBuilder = () => {
                                   </a>
                                 )}
                                 {item.type === "file" && item.fileName && (
-                                  <p className="text-sm text-gray-600">
+                                  <p className="text-gray-300 text-sm">
                                     {item.fileName} ({Math.round((item.fileSize || 0) / 1024)} KB)
                                   </p>
                                 )}
                               </div>
                             </div>
-                            <div className="flex gap-2">
+                            <div className="flex gap-3">
                               <button
                                 onClick={() => handleEditItem(item)}
-                                className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors duration-200"
-                                title="Edit"
+                                className="p-2 hover:bg-gray-600 rounded-lg text-gray-100"
+                                title="Edit this item"
                               >
-                                ✏️
+                                ✏️ <span className="sr-only">Edit</span>
                               </button>
                               <button
                                 onClick={() => handleDeleteItem(item.id)}
-                                className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors duration-200"
-                                title="Delete"
+                                className="p-2 hover:bg-gray-600 rounded-lg text-gray-100"
+                                title="Delete this item"
                               >
-                                🗑️
+                                🗑️ <span className="sr-only">Delete</span>
                               </button>
                             </div>
                           </div>
@@ -376,35 +387,46 @@ const CourseBuilder = () => {
         onSave={handleSaveModule}
         module={currentModule}
         modules={modules}
+        className="bg-gray-800 text-gray-100"
       />
       <LinkModal
         isOpen={isLinkModalOpen}
         onClose={() => handleClose("link")}
         onSave={handleSaveLink}
         moduleId={currentModuleId}
+        className="bg-gray-800 text-gray-100"
       />
       <UploadModal
         isOpen={isUploadModalOpen}
         onClose={() => handleClose("upload")}
         onSave={handleSaveUpload}
         moduleId={currentModuleId}
+        className="bg-gray-800 text-gray-100"
       />
       <EditLinkModal
         isOpen={isEditLinkModalOpen}
         onClose={() => handleClose("editLink")}
         onSave={handleUpdateItem}
         item={currentItem}
+        className="bg-gray-800 text-gray-100"
       />
       <EditFileModal
         isOpen={isEditFileModalOpen}
         onClose={() => handleClose("editFile")}
         onSave={handleUpdateItem}
         item={currentItem}
+        className="bg-gray-800 text-gray-100"
       />
 
       {/* Toasts */}
       {toasts.map((toast) => (
-        <Toast key={toast.id} message={toast.message} type={toast.type} onClose={() => removeToast(toast.id)} />
+        <Toast
+          key={toast.id}
+          message={toast.message}
+          type={toast.type}
+          onClose={() => removeToast(toast.id)}
+          className="bg-gray-800 text-gray-100 border border-gray-600"
+        />
       ))}
     </div>
   )
